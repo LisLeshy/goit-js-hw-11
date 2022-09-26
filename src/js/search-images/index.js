@@ -1,7 +1,7 @@
 import fetchImages from './fetch-images';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-// import SimpleLightbox from 'simplelightbox';
-// import 'simplelightbox/dist/simple-lightbox.min.css';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const searchForm = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
@@ -73,7 +73,8 @@ async function onSubmitSearchForm(e) {
 
   const response = await fetchImages(searchQuery, currentPage);
   currentHits = response.hits.length;
-  // console.log(response.totalHits);
+  console.log(response.totalHits);
+
   if (response.totalHits > 40) {
     loadMoreBtn.classList.remove('is-hidden');
   } else {
@@ -85,12 +86,15 @@ async function onSubmitSearchForm(e) {
       Notify.success(`Hooray! We found ${response.totalHits} images.`);
       gallery.innerHTML = '';
       renderCardImage(response.hits);
-
+      lightbox.refresh();
       endCollectionText.classList.add('is-hidden');
     }
-
+    if (response.totalHits < 40) {
+      loadMoreBtn.classList.add('is-hidden');
+      endCollectionText.classList.remove('is-hidden');
+    }
     if (response.totalHits === 0) {
-      console.log(response.totalHits);
+      // console.log(response.totalHits);
       gallery.innerHTML = '';
       Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -110,6 +114,7 @@ async function onClickLoadMoreBtn() {
   const response = await fetchImages(searchQuery, currentPage);
   renderCardImage(response.hits);
   currentHits += response.hits.length;
+  lightbox.refresh();
   console.log(currentHits);
   console.log(response.totalHits);
   if (currentHits >= response.totalHits) {
@@ -117,3 +122,9 @@ async function onClickLoadMoreBtn() {
     endCollectionText.classList.remove('is-hidden');
   }
 }
+
+let lightbox = new SimpleLightbox('.photo-card a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
+console.log(lightbox);
